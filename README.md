@@ -1,7 +1,7 @@
 
-# 🚨 Cyberbullying Detection using RoBERTa, NLP & Privacy-Preserving AI  
+# 🛡️ A Hybrid Privacy-Preserving Cyberbullying Detection Framework Using RoBERTa  
 
-An **AI-powered Cyberbullying Detection System** developed and deployed by **Harini Lakshmanan**.  
+An **AI-powered Cyberbullying Detection Framework** developed and deployed by **Harini Lakshmanan**.  
 This project integrates **RoBERTa (Transformer-based NLP model)**, **Affective Features (sentiment & emotion analysis)**, and **Federated Learning with Differential Privacy** to detect and mitigate online harassment.  
 
 🔗 **[Live Demo](https://cyberbullying-detection-eta.vercel.app/)**  
@@ -44,87 +44,125 @@ The goal of this project is:
 
 ## ⚙️ Installation & Setup  
 
-Clone the repository:  
-\`\`\`bash
+Follow the steps below to run the project locally.  
+
+### 1. Clone the Repository  
+```bash
 git clone https://github.com/Harini410/Cyberbullying-detection.git
 cd Cyberbullying-detection
-\`\`\`
+````
 
-Install backend dependencies:  
-\`\`\`bash
+---
+
+### 2. Backend Setup (Python API & Model)
+
+It is recommended to use a virtual environment.
+
+```bash
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate   # On Linux/Mac
+venv\Scripts\activate      # On Windows
+
+# Install dependencies
 pip install -r requirements.txt
-\`\`\`
 
-Run the backend locally:  
-\`\`\`bash
+# Run backend server
 python app.py
-\`\`\`
+```
 
-For frontend (if in a separate folder):  
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
+By default, the backend runs on: `http://127.0.0.1:5000/`
 
 ---
 
-## 🔬 How the Model Works  
+### 3. Frontend Setup (React + Tailwind)
 
-1. **Data Collection & Preprocessing**  
-   - Tweets and social media posts are cleaned (URLs, hashtags, emojis removed).  
-   - Text is tokenized, lemmatized, and balanced using SMOTE for fairness.  
+If the frontend is in a separate folder:
 
-2. **Feature Engineering**  
-   - **RoBERTa embeddings** capture contextual meaning.  
-   - **Sentiment analysis** (positive, negative, neutral).  
-   - **Emotion detection** (anger, sadness, fear, etc.) enriches context.  
-   - Traditional embeddings (TF-IDF, Word2Vec) complement deep features.  
+```bash
+cd frontend
+npm install     # Install dependencies
+npm run dev     # Start development server
+```
 
-3. **Model Development**  
-   - Baselines: CNN, RNN, LSTM, BiLSTM, GRU.  
-   - Proposed: **Fine-tuned RoBERTa** with affective features.  
-   - Training with **Federated Learning** → data stays private, only gradients shared.  
-   - **Differential Privacy** noise added to safeguard user data.  
-
-4. **Evaluation**  
-   - Metrics: Accuracy, Precision, Recall, F1-score.  
-   - RoBERTa achieved: **93% Accuracy, 94% Precision, 93% Recall, 94% F1-score**.  
-   - Outperformed all baseline models.  
+Frontend will run on: `http://localhost:3000/`
 
 ---
 
-## 🚀 Usage  
+### 4. Access the Application
 
-1. Open the web app (locally or via live demo).  
-2. Enter text into the input field.  
-3. Click **"Detect"** → Model classifies as:  
-   - ✅ **Non-Bullying**  
-   - ⚠️ **Cyberbullying Detected**  
+* Open the frontend in your browser.
+* Ensure backend is running for model inference.
+* Enter text and click **Detect** to classify input as:
 
----
-
-## 📊 Research Contribution  
-
-- ✅ **Novel Framework**: Combines **RoBERTa + Emotion/Sentiment Features + Federated Learning**.  
-- 🔒 **Privacy by Design**: Trains without exposing raw data.  
-- 📈 **State-of-the-Art Performance**: Surpasses CNN/LSTM/GRU baselines.  
-- 🎓 **M.Tech Thesis / IEEE-ready Research**: Suitable for academic publication.  
-- 🌍 **Industry Deployment Potential**: Scalable to social media platforms for automated moderation.  
+  * ✅ Non-Bullying
+  * ⚠️ Cyberbullying Detected
 
 ---
 
+## 🔬 How the Model Works
 
-## 📬 Contact Information  
+1. **Data Collection & Preprocessing**
+
+   * Tweets and social media posts are cleaned (URLs, hashtags, emojis removed).
+   * Text is tokenized, lemmatized, and balanced using SMOTE for fairness.
+
+2. **Feature Engineering**
+
+   * **RoBERTa embeddings** capture contextual meaning.
+   * **Sentiment analysis** (positive, negative, neutral).
+   * **Emotion detection** (anger, sadness, fear, etc.) enriches context.
+   * Traditional embeddings (TF-IDF, Word2Vec) complement deep features.
+
+3. **Model Development**
+
+   * Baselines: CNN, RNN, LSTM, BiLSTM, GRU.
+   * Proposed: **Fine-tuned RoBERTa** with affective features.
+   * Training with **Federated Learning** → data stays private, only gradients shared.
+   * **Differential Privacy** noise added to safeguard user data.
+
+4. **Evaluation**
+
+   * Metrics: Accuracy, Precision, Recall, F1-score.
+   * RoBERTa achieved: **93% Accuracy, 94% Precision, 93% Recall, 94% F1-score**.
+   * Outperformed all baseline models.
+
+---
+
+## 🚀 Usage
+
+1. Open the web app (locally or via live demo).
+2. Enter text into the input field.
+3. Click **"Detect"** → Model classifies as:
+
+   * ✅ **Non-Bullying**
+   * ⚠️ **Cyberbullying Detected**
+
+---
+
+## 📊 Research Contribution
+
+* ✅ **Novel Framework**: Combines **RoBERTa + Emotion/Sentiment Features + Federated Learning**.
+* 🔒 **Privacy by Design**: Trains without exposing raw data.
+* 📈 **State-of-the-Art Performance**: Surpasses CNN/LSTM/GRU baselines.
+* 🎓 **M.Tech Thesis / IEEE-ready Research**: Suitable for academic publication.
+* 🌍 **Industry Deployment Potential**: Scalable to social media platforms for automated moderation.
+
+---
+
+
+## 📬 Contact Information
 
 👩‍💻 **Developed by:** Harini L
-🎓 **M.Tech Research Work** | Cyberbullying Detection using AI  
+🎓 **M.Tech Research Work** | Cyberbullying Detection using AI
 
-🌐 **Portfolio:** [https://port-folio-02-p4yp.vercel.app/](https://port-folio-02-p4yp.vercel.app/)  
-💼 **LinkedIn:** [https://www.linkedin.com/in/harini-lakshmanan-04](https://www.linkedin.com/in/harini-lakshmanan-04)  
-📧 **Email:** lakshmananharini@gmail.com  
+🌐 **Portfolio:** [https://port-folio-02-p4yp.vercel.app/](https://port-folio-02-p4yp.vercel.app/)
+💼 **LinkedIn:** [https://www.linkedin.com/in/harini-lakshmanan-04](https://www.linkedin.com/in/harini-lakshmanan-04)
+📧 **Email:** [lakshmananharini@gmail.com](mailto:lakshmananharini@gmail.com)
 
 ---
 
-## ⭐ Acknowledgement  
+## ⭐ Acknowledgement
 
-This project was **conceptualized, implemented, and deployed independently** by Harini L as part of academic research and professional development.  
+This project was **conceptualized, implemented, and deployed independently** by Harini L as part of academic research and professional development.
+
