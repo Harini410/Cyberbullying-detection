@@ -116,7 +116,7 @@ npm run dev
 
 ## 📬 Contact Information  
 
-👩‍💻 **Developed by:** Harini Lakshmanan  
+👩‍💻 **Developed by:** Harini L
 🎓 **M.Tech Research Work** | Cyberbullying Detection using AI  
 
 🌐 **Portfolio:** [https://port-folio-02-p4yp.vercel.app/](https://port-folio-02-p4yp.vercel.app/)  
