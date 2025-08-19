@@ -345,7 +345,7 @@ export default function HomePage() {
               </motion.a>
 
               <motion.a
-                href="https://port-folio-02.vercel.app/"
+                href="https://port-folio-02-p4yp.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05, y: -5 }}
