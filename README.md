@@ -1,4 +1,4 @@
-cat > README.md << 'EOF'
+
 # 🚨 Cyberbullying Detection using RoBERTa, NLP & Privacy-Preserving AI  
 
 An **AI-powered Cyberbullying Detection System** developed and deployed by **Harini Lakshmanan**.  
@@ -127,6 +127,4 @@ npm run dev
 
 ## ⭐ Acknowledgement  
 
-This project was **conceptualized, implemented, and deployed independently** by Harini Lakshmanan as part of academic research and professional development.  
-
-EOF
+This project was **conceptualized, implemented, and deployed independently** by Harini L as part of academic research and professional development.  
