@@ -1,7 +1,7 @@
 
 # 🛡️ A Hybrid Privacy-Preserving Cyberbullying Detection Framework Using RoBERTa  
 
-An **AI-powered Cyberbullying Detection Framework** developed and deployed by **Harini Lakshmanan**.  
+An **AI-powered Cyberbullying Detection Framework** developed and deployed by **Harini L**.  
 This project integrates **RoBERTa (Transformer-based NLP model)**, **Affective Features (sentiment & emotion analysis)**, and **Federated Learning with Differential Privacy** to detect and mitigate online harassment.  
 
 🔗 **[Live Demo](https://cyberbullying-detection-eta.vercel.app/)**  
