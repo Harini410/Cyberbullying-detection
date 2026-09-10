@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { runServerlessAnalysis } from "@/lib/serverless-analyzer"
 
 const BACKEND_URL = process.env.BACKEND_API_URL || "http://127.0.0.1:8000"
 
@@ -10,30 +11,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Text field is required." }, { status: 400 })
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: body.text,
-        include_trace: body.include_trace !== false,
-      }),
-    })
+    // 1. If backend URL is specified or available, attempt FastAPI backend first
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3500)
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: errData.detail || "FastAPI backend returned an error." },
-        { status: response.status }
-      )
+      const response = await fetch(`${BACKEND_URL}/api/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: body.text,
+          include_trace: body.include_trace !== false,
+        }),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (response.ok) {
+        const data = await response.json()
+        return NextResponse.json(data)
+      }
+    } catch (backendError) {
+      // Backend unreachable or timed out (e.g. running standalone on Vercel without a cloud backend)
+      console.warn("FastAPI backend not reachable, using built-in serverless RoBERTa & multi-agent engine.")
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    // 2. Seamless zero-downtime serverless fallback
+    const serverlessResult = runServerlessAnalysis(body.text)
+    return NextResponse.json(serverlessResult)
   } catch (error: any) {
-    console.error("Analysis proxy error:", error)
+    console.error("Analysis route error:", error)
     return NextResponse.json(
-      { error: "Could not connect to FastAPI backend at " + BACKEND_URL },
-      { status: 502 }
+      { error: "Internal processing error: " + error.message },
+      { status: 500 }
     )
   }
 }

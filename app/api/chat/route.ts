@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { runServerlessChat } from "@/lib/serverless-chat"
 
 const BACKEND_URL = process.env.BACKEND_API_URL || "http://127.0.0.1:8000"
 
@@ -10,31 +11,45 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Message field is required." }, { status: 400 })
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: body.message,
-        conversation_id: body.conversation_id || null,
-        analysis_id: body.analysis_id || null,
-      }),
-    })
+    // 1. Attempt FastAPI backend if available
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3500)
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}))
-      return NextResponse.json(
-        { error: errData.detail || "FastAPI backend returned an error." },
-        { status: response.status }
-      )
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: body.message,
+          conversation_id: body.conversation_id || null,
+          analysis_id: body.analysis_id || null,
+        }),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (response.ok) {
+        const data = await response.json()
+        return NextResponse.json(data)
+      }
+    } catch (backendError) {
+      console.warn("FastAPI backend not reachable for chat, using built-in serverless chatbot engine.")
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    // 2. Seamless serverless chat fallback
+    const serverlessReply = runServerlessChat(
+      body.message,
+      body.conversation_id,
+      body.analysis_id
+    )
+
+    return NextResponse.json(serverlessReply)
   } catch (error: any) {
-    console.error("Chat proxy error:", error)
+    console.error("Chat route error:", error)
     return NextResponse.json(
-      { error: "Could not connect to FastAPI backend at " + BACKEND_URL },
-      { status: 502 }
+      { error: "Internal processing error: " + error.message },
+      { status: 500 }
     )
   }
 }

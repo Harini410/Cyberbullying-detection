@@ -1,0 +1,49 @@
+warning: in the working copy of 'tsconfig.json', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/tsconfig.json b/tsconfig.json[m
+[1mindex 4b2dc7b..48d6d82 100644[m
+[1m--- a/tsconfig.json[m
+[1m+++ b/tsconfig.json[m
+[36m@@ -1,6 +1,10 @@[m
+ {[m
+   "compilerOptions": {[m
+[31m-    "lib": ["dom", "dom.iterable", "esnext"],[m
+[32m+[m[32m    "lib": [[m
+[32m+[m[32m      "dom",[m
+[32m+[m[32m      "dom.iterable",[m
+[32m+[m[32m      "esnext"[m
+[32m+[m[32m    ],[m
+     "allowJs": true,[m
+     "target": "ES6",[m
+     "skipLibCheck": true,[m
+[36m@@ -11,7 +15,7 @@[m
+     "moduleResolution": "bundler",[m
+     "resolveJsonModule": true,[m
+     "isolatedModules": true,[m
+[31m-    "jsx": "preserve",[m
+[32m+[m[32m    "jsx": "react-jsx",[m
+     "incremental": true,[m
+     "plugins": [[m
+       {[m
+[36m@@ -19,9 +23,19 @@[m
+       }[m
+     ],[m
+     "paths": {[m
+[31m-      "@/*": ["./*"][m
+[32m+[m[32m      "@/*": [[m
+[32m+[m[32m        "./*"[m
+[32m+[m[32m      ][m
+     }[m
+   },[m
+[31m-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],[m
+[31m-  "exclude": ["node_modules"][m
+[32m+[m[32m  "include": [[m
+[32m+[m[32m    "next-env.d.ts",[m
+[32m+[m[32m    "**/*.ts",[m
+[32m+[m[32m    "**/*.tsx",[m
+[32m+[m[32m    ".next/types/**/*.ts",[m
+[32m+[m[32m    ".next/dev/types/**/*.ts"[m
+[32m+[m[32m  ],[m
+[32m+[m[32m  "exclude": [[m
+[32m+[m[32m    "node_modules"[m
+[32m+[m[32m  ][m
+ }[m
