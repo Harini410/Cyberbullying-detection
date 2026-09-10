@@ -1,0 +1,29 @@
+{
+  "evaluation_date": "2026-09-10",
+  "model": "RoBERTa (cardiffnlp/twitter-roberta-base-offensive)",
+  "architecture": "Bidirectional Transformer Sequence Classification",
+  "sample_size": 10,
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1_score": 1.0,
+  "confusion_matrix": [
+    [5, 0],
+    [0, 5]
+  ],
+  "historical_research_benchmark": {
+    "dataset": "47,692 Annotated Social Media Posts",
+    "reported_accuracy": 0.93,
+    "reported_precision": 0.94,
+    "reported_recall": 0.93,
+    "reported_f1": 0.94,
+    "training_framework": "Federated Learning with Differential Privacy (Opacus)",
+    "baseline_comparisons": {
+      "CNN": {"accuracy": 0.89, "f1": 0.88},
+      "RNN": {"accuracy": 0.80, "f1": 0.78},
+      "LSTM": {"accuracy": 0.87, "f1": 0.86},
+      "Bi-LSTM": {"accuracy": 0.90, "f1": 0.89},
+      "GRU": {"accuracy": 0.88, "f1": 0.87}
+    }
+  }
+}
