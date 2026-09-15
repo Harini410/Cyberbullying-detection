@@ -242,7 +242,7 @@ export function runServerlessAnalysis(text: string): ServerlessAnalysisResult {
         cyberbullying: probBullying,
         non_bullying: probSafe,
       },
-      model_name: "RoBERTa (Transformer Sequence Classifier)",
+      model_name: "RoBERTa — Active Primary Model",
       model_version: "2.0.0",
     },
     affective_analysis: {
@@ -278,3 +278,5 @@ export function runServerlessAnalysis(text: string): ServerlessAnalysisResult {
     latency_ms: Math.max(75, elapsed),
   }
 }
+
+export const analyzeMessage = runServerlessAnalysis

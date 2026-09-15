@@ -4,11 +4,14 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import { Navigation } from "@/components/navigation"
+import { Footer } from "@/components/footer"
+import { FloatingChatAssistant } from "@/components/floating-chat-assistant"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "CyberSafe AI — Agentic AI-Powered Cyberbullying Detection Platform",
+  description:
+    "Production-grade multi-agent AI system combining fine-tuned RoBERTa transformer inference, RAG knowledge retrieval, affective emotion vectors, and conversational safety support.",
+  generator: "CyberSafe AI",
 }
 
 export default function RootLayout({
@@ -27,9 +30,11 @@ html {
 }
         `}</style>
       </head>
-      <body>
+      <body className="flex min-h-screen flex-col justify-between">
         <Navigation />
-        {children}
+        <main className="flex-1">{children}</main>
+        <Footer />
+        <FloatingChatAssistant />
       </body>
     </html>
   )

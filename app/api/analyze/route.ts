@@ -48,3 +48,19 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function GET() {
+  return NextResponse.json({
+    service: "CyberSafe AI Analysis & Multi-Agent Engine",
+    active_model: "RoBERTa — Active Primary Model",
+    pipeline: [
+      "DetectionAgent (RoBERTa)",
+      "EmotionAgent",
+      "ContextAgent",
+      "RiskAgent",
+      "RAGAgent",
+      "ExplanationAgent",
+      "ResponseAgent"
+    ]
+  })
+}

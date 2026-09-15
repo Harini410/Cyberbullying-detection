@@ -5,7 +5,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -88,42 +87,8 @@ interface AnalysisResult {
   latency_ms: number
 }
 
-const models = [
-  {
-    value: "roberta",
-    label: "RoBERTa (Active Primary - 93% Accuracy)",
-    description: "Transformer model with affective integration & differential privacy",
-  },
-  {
-    value: "bi_lstm",
-    label: "Bi-LSTM (90% Accuracy Baseline)",
-    description: "Bidirectional LSTM comparison baseline",
-  },
-  {
-    value: "cnn",
-    label: "CNN (89% Accuracy Baseline)",
-    description: "Convolutional Neural Network comparison baseline",
-  },
-  {
-    value: "gru",
-    label: "GRU (88% Accuracy Baseline)",
-    description: "Gated Recurrent Unit comparison baseline",
-  },
-  {
-    value: "lstm",
-    label: "LSTM (87% Accuracy Baseline)",
-    description: "Standard LSTM sequence comparison baseline",
-  },
-  {
-    value: "rnn",
-    label: "RNN (80% Accuracy Baseline)",
-    description: "Classical Recurrent Neural Network baseline",
-  },
-]
-
 export default function DetectPage() {
   const [text, setText] = useState("")
-  const [selectedModel, setSelectedModel] = useState("roberta")
   const [result, setResult] = useState<AnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -184,38 +149,21 @@ export default function DetectPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/" className="flex items-center gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Home
-                </Link>
-              </Button>
-              <div className="flex items-center gap-2">
-                <Shield className="h-6 w-6 text-primary" />
-                <span className="text-lg font-semibold text-foreground">CyberSafe AI</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/chat" className="flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4 text-primary" />
-                  AI Chatbot
-                </Link>
-              </Button>
-              <Button variant="default" size="sm" asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-            </div>
-          </nav>
-        </div>
-      </header>
-
       <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="flex items-center justify-between pb-2">
+          <Button asChild variant="ghost" size="sm" className="text-xs font-semibold gap-1.5 h-8 text-muted-foreground hover:text-foreground">
+            <Link href="/">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to Home</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="text-xs font-semibold gap-1.5 h-8">
+            <Link href="/dashboard">
+              <Activity className="h-3.5 w-3.5 text-primary" />
+              <span>Dashboard</span>
+            </Link>
+          </Button>
+        </div>
         <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-3">
@@ -245,23 +193,22 @@ export default function DetectPage() {
             </CardHeader>
             <CardContent className="space-y-5">
               <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">Select AI Model</label>
-                  <Select value={selectedModel} onValueChange={setSelectedModel}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select model" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {models.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>
-                          <div className="flex flex-col text-left">
-                            <span className="font-medium">{m.label}</span>
-                            <span className="text-xs text-muted-foreground">{m.description}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Active Model Indicator */}
+                <div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-3.5 w-3.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-foreground text-sm sm:text-base">RoBERTa — Active Primary Model</span>
+                        <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] uppercase font-semibold px-2 py-0.5">
+                          Live Primary Model
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Deep bidirectional sequence classifier with multi-agent affective & RAG grounding.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -335,7 +282,12 @@ export default function DetectPage() {
                   {/* Primary RoBERTa Prediction */}
                   <Card className="border-border">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">RoBERTa Classification</CardTitle>
+                      <CardTitle className="text-sm font-medium text-primary flex items-center justify-between">
+                        <span>RoBERTa — Active Primary Model</span>
+                        <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/40 font-semibold">
+                          Active Primary Model
+                        </Badge>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2">
@@ -356,7 +308,7 @@ export default function DetectPage() {
                         <Progress value={result.prediction.confidence * 100} className="h-2" />
                       </div>
                       <div className="text-xs text-muted-foreground pt-1 border-t border-border/60 flex justify-between">
-                        <span>Model: {result.prediction.model_name || "RoBERTa"}</span>
+                        <span>Active Model: {result.prediction.model_name || "RoBERTa — Active Primary Model"}</span>
                         <span>{result.latency_ms}ms</span>
                       </div>
                     </CardContent>

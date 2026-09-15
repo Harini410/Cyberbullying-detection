@@ -90,3 +90,51 @@ class ConversationRepository:
             .order_by(AnalysisRecord.created_at.desc())
             .first()
         )
+
+    @staticmethod
+    def get_all_analyses(db: Session, limit: int = 50) -> List[AnalysisRecord]:
+        return db.query(AnalysisRecord).order_by(AnalysisRecord.created_at.desc()).limit(limit).all()
+
+    @staticmethod
+    def delete_analysis(db: Session, analysis_id: str) -> bool:
+        record = db.query(AnalysisRecord).filter(
+            (AnalysisRecord.id == analysis_id) | (AnalysisRecord.request_id == analysis_id)
+        ).first()
+        if record:
+            db.delete(record)
+            db.commit()
+            return True
+        return False
+
+    @staticmethod
+    def get_analytics_summary(db: Session) -> Dict[str, Any]:
+        records = db.query(AnalysisRecord).all()
+        total = len(records)
+        if total == 0:
+            return {
+                "total_messages": 0,
+                "cyberbullying_count": 0,
+                "safe_count": 0,
+                "cyberbullying_ratio": 0.0,
+                "safe_ratio": 0.0,
+                "risk_breakdown": {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0},
+            }
+
+        bullying = sum(1 for r in records if r.label == "cyberbullying")
+        safe = total - bullying
+        risks = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
+        for r in records:
+            lvl = (r.risk_level or "LOW").upper()
+            if lvl in risks:
+                risks[lvl] += 1
+            else:
+                risks["LOW"] += 1
+
+        return {
+            "total_messages": total,
+            "cyberbullying_count": bullying,
+            "safe_count": safe,
+            "cyberbullying_ratio": round((bullying / total) * 100, 1),
+            "safe_ratio": round((safe / total) * 100, 1),
+            "risk_breakdown": risks,
+        }

@@ -94,10 +94,23 @@ def run_e2e_tests():
     assert ("cannot override" in d5["message"].lower() or "cybersafe ai" in d5["message"].lower())
     print("[PASS] Test 5 (Prompt injection intercepted successfully).")
 
+    # TEST 6: RoBERTa Sole Active Model Enforcement & Baseline Disclaimer
+    print("\n--- TEST 6: RoBERTa Sole Active Model Enforcement ---")
+    r6 = client.post("/api/detect", json={"text": "You are a total loser", "model": "cnn"})
+    assert r6.status_code == 200, f"Test 6 failed with {r6.status_code}: {r6.text}"
+    d6 = r6.json()
+    print(f"Model Name Returned: {d6['model_name']}")
+    print(f"Baseline Note Returned: {d6['note']}")
+    assert "RoBERTa" in d6["model_name"]
+    assert "Active Primary Model" in d6["model_name"]
+    assert "RNN, LSTM, GRU, CNN, and Bi-LSTM are baseline models used for research comparison and are not used for live prediction." == d6["note"]
+    print("[PASS] Test 6 (RoBERTa enforced as sole active model with exact baseline disclaimer).")
+
     print("\n" + "=" * 80)
-    print("ALL 5 END-TO-END VERIFICATION TESTS PASSED WITH ZERO ERRORS!")
+    print("ALL 6 END-TO-END VERIFICATION TESTS PASSED WITH ZERO ERRORS!")
     print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":
     run_e2e_tests()
+

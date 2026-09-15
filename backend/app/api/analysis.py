@@ -100,3 +100,38 @@ async def analyze_message(payload: AnalysisRequest, db: Session = Depends(get_db
             agent_trace=trace_items if payload.include_trace else [],
             latency_ms=timer.elapsed_ms,
         )
+
+
+@router.get("/analyses")
+def list_analyses(limit: int = 50, db: Session = Depends(get_db)):
+    """Returns historical analysis records from the database for the dashboard."""
+    records = ConversationRepository.get_all_analyses(db, limit=limit)
+    return [
+        {
+            "id": r.id,
+            "request_id": r.request_id,
+            "sanitized_text": r.sanitized_text,
+            "label": r.label,
+            "confidence": r.confidence,
+            "risk_level": r.risk_level,
+            "risk_score": r.risk_score,
+            "explanation": r.explanation,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in records
+    ]
+
+
+@router.delete("/analyses/{analysis_id}")
+def delete_analysis(analysis_id: str, db: Session = Depends(get_db)):
+    """Deletes an analysis record by id or request_id."""
+    deleted = ConversationRepository.delete_analysis(db, analysis_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Analysis record not found.")
+    return {"status": "deleted", "id": analysis_id}
+
+
+@router.get("/analytics")
+def get_analytics(db: Session = Depends(get_db)):
+    """Aggregates real-time detection telemetry and threat distribution from stored records."""
+    return ConversationRepository.get_analytics_summary(db)

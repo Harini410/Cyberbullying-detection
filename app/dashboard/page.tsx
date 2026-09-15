@@ -1,6 +1,7 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -10,9 +11,13 @@ import {
   AlertTriangle,
   CheckCircle,
   Brain,
-  Users,
-  Calendar,
-  Database,
+  Trash2,
+  RefreshCw,
+  Activity,
+  Layers,
+  ArrowRight,
+  Sparkles,
+  Lock
 } from "lucide-react"
 import Link from "next/link"
 import {
@@ -20,563 +25,427 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  BarChart,
-  Bar,
 } from "recharts"
 import { motion } from "framer-motion"
 
-// Mock data for dashboard
-const pieData = [
-  { name: "Safe Content", value: 78, color: "hsl(var(--chart-3))" },
-  { name: "Cyberbullying", value: 22, color: "hsl(var(--chart-4))" },
-]
-
-const classDistributionData = [
-  { name: "Religion", samples: 7998, color: "hsl(var(--chart-1))" },
-  { name: "Age", samples: 7992, color: "hsl(var(--chart-2))" },
-  { name: "Gender", samples: 7973, color: "hsl(var(--chart-3))" },
-  { name: "Ethnicity", samples: 7961, color: "hsl(var(--chart-4))" },
-  { name: "Not Cyberbullying", samples: 7945, color: "hsl(var(--chart-5))" },
-  { name: "Other Cyberbullying", samples: 7823, color: "hsl(var(--destructive))" },
-]
-
-const timelineData = [
-  { date: "Jan", safe: 120, bullying: 25 },
-  { date: "Feb", safe: 135, bullying: 30 },
-  { date: "Mar", safe: 148, bullying: 28 },
-  { date: "Apr", safe: 162, bullying: 35 },
-  { date: "May", safe: 175, bullying: 32 },
-  { date: "Jun", safe: 188, bullying: 29 },
-  { date: "Jul", safe: 195, bullying: 31 },
-  { date: "Aug", safe: 210, bullying: 27 },
-  { date: "Sep", safe: 225, bullying: 33 },
-  { date: "Oct", safe: 240, bullying: 30 },
-  { date: "Nov", safe: 255, bullying: 28 },
-  { date: "Dec", safe: 268, bullying: 25 },
-]
-
-const modelBenchmarkData = [
-  { name: "RNN", accuracy: 80, color: "hsl(var(--chart-1))" },
-  { name: "LSTM", accuracy: 87, color: "hsl(var(--chart-2))" },
-  { name: "GRU", accuracy: 88, color: "hsl(var(--chart-3))" },
-  { name: "CNN", accuracy: 89, color: "hsl(var(--chart-5))" },
-  { name: "Bi-LSTM", accuracy: 90, color: "hsl(var(--chart-4))" },
-  { name: "RoBERTa", accuracy: 94, color: "hsl(var(--primary))", highlight: true },
-]
-
-const recentAnalyses = [
-  {
-    id: 1,
-    text: "Great job on your presentation! You did amazing work.",
-    prediction: "safe" as const,
-    confidence: 92,
-    timestamp: "2 minutes ago",
-    model: "RoBERTa",
-  },
-  {
-    id: 2,
-    text: "You're so stupid and worthless. Nobody likes you.",
-    prediction: "bullying" as const,
-    confidence: 88,
-    timestamp: "5 minutes ago",
-    model: "Bi-LSTM",
-  },
-  {
-    id: 3,
-    text: "Looking forward to working together on this project.",
-    prediction: "safe" as const,
-    confidence: 95,
-    timestamp: "12 minutes ago",
-    model: "CNN",
-  },
-  {
-    id: 4,
-    text: "Kill yourself, loser. The world would be better without you.",
-    prediction: "bullying" as const,
-    confidence: 97,
-    timestamp: "18 minutes ago",
-    model: "RoBERTa",
-  },
-]
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+interface AnalysisItem {
+  id: string
+  request_id: string
+  sanitized_text: string
+  label: string
+  confidence: number
+  risk_level: string
+  risk_score: number
+  explanation?: string
+  created_at?: string
 }
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-  hover: {
-    scale: 1.02,
-    y: -2,
-    transition: {
-      duration: 0.2,
-      ease: "easeOut",
-    },
-  },
-}
-
-const statsVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-    },
-  },
+interface AnalyticsData {
+  total_messages: number
+  cyberbullying_count: number
+  safe_count: number
+  cyberbullying_ratio: number
+  safe_ratio: number
+  risk_breakdown: {
+    LOW: number
+    MEDIUM: number
+    HIGH: number
+    CRITICAL: number
+  }
 }
 
 export default function DashboardPage() {
-  const totalAnalyses = timelineData.reduce((acc, curr) => acc + curr.safe + curr.bullying, 0)
-  const totalBullying = timelineData.reduce((acc, curr) => acc + curr.bullying, 0)
-  const totalSafe = timelineData.reduce((acc, curr) => acc + curr.safe, 0)
-  const bullyingRate = ((totalBullying / totalAnalyses) * 100).toFixed(1)
+  const [analyses, setAnalyses] = useState<AnalysisItem[]>([])
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    total_messages: 0,
+    cyberbullying_count: 0,
+    safe_count: 0,
+    cyberbullying_ratio: 0.0,
+    safe_ratio: 0.0,
+    risk_breakdown: { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 },
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const fetchData = async () => {
+    setIsLoading(true)
+    try {
+      const [analysesRes, analyticsRes] = await Promise.all([
+        fetch("/api/analyses"),
+        fetch("/api/analytics"),
+      ])
+
+      if (analysesRes.ok) {
+        const analysesData = await analysesRes.json()
+        if (Array.isArray(analysesData)) {
+          setAnalyses(analysesData)
+        }
+      }
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json()
+        if (analyticsData && typeof analyticsData.total_messages === "number") {
+          setAnalytics(analyticsData)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/analyses/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        // Optimistically remove from list
+        setAnalyses((prev) => prev.filter((item) => item.id !== id && item.request_id !== id))
+        // Refresh analytics summary
+        const analyticsRes = await fetch("/api/analytics")
+        if (analyticsRes.ok) {
+          const freshAnalytics = await analyticsRes.json()
+          setAnalytics(freshAnalytics)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to delete analysis record:", error)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Chart data from real backend analytics
+  const pieData = [
+    { name: "Safe Content", value: analytics.safe_count, color: "#10b981" },
+    { name: "Cyberbullying", value: analytics.cyberbullying_count, color: "#ef4444" },
+  ]
+
+  const riskChartData = [
+    { name: "Low", count: analytics.risk_breakdown.LOW || 0, fill: "#10b981" },
+    { name: "Medium", count: analytics.risk_breakdown.MEDIUM || 0, fill: "#eab308" },
+    { name: "High", count: analytics.risk_breakdown.HIGH || 0, fill: "#f97316" },
+    { name: "Critical", count: analytics.risk_breakdown.CRITICAL || 0, fill: "#ef4444" },
+  ]
+
+  const getRiskBadgeColor = (level: string) => {
+    switch (level?.toUpperCase()) {
+      case "CRITICAL":
+        return "bg-red-600 text-white"
+      case "HIGH":
+        return "bg-orange-500 text-white"
+      case "MEDIUM":
+        return "bg-yellow-500 text-black"
+      default:
+        return "bg-emerald-600 text-white"
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      >
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/" className="flex items-center gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
-                  </Link>
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
-                <Shield className="h-6 w-6 text-primary" />
-                <span className="text-lg font-semibold text-foreground">SafeGuard AI</span>
-              </motion.div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
+        {/* Navigation & Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-6">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mb-1">
+              <TrendingUp className="h-3.5 w-3.5" />
+              <span>PRODUCTION TELEMETRY & PERSISTENCE</span>
             </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button asChild>
-                <Link href="/detect">Analyze Text</Link>
-              </Button>
-            </motion.div>
-          </nav>
-        </div>
-      </motion.header>
-
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
-          {/* Page Header */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">Analytics Dashboard</h1>
-            <p className="text-lg text-muted-foreground">
-              Monitor cyberbullying detection patterns, model performance, and content analysis trends.
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+              Analytics & Telemetry Dashboard
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Real-time evaluation statistics, risk breakdown, and audit log stored in local database.
             </p>
-          </motion.div>
+          </div>
 
-          {/* Stats Overview */}
-          <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Total Analyses",
-                value: "2,674",
-                change: "+12% from last month",
-                icon: Brain,
-                color: "primary",
-              },
-              {
-                title: "Bullying Rate",
-                value: "13.2%",
-                change: "-2.3% from last month",
-                icon: AlertTriangle,
-                color: "destructive",
-              },
-              {
-                title: "Safe Content",
-                value: "2,321",
-                change: "+15% from last month",
-                icon: CheckCircle,
-                color: "green",
-              },
-              {
-                title: "Active Users",
-                value: "1,247",
-                change: "+8% from last month",
-                icon: Users,
-                color: "primary",
-              },
-            ].map((stat, index) => (
-              <motion.div key={index} variants={cardVariants} whileHover="hover">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                        <motion.p
-                          initial={{ opacity: 0, scale: 0.5 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.6, delay: index * 0.1 }}
-                          className="text-2xl font-bold text-foreground"
-                        >
-                          {stat.value}
-                        </motion.p>
-                      </div>
-                      <motion.div
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.6 }}
-                        className={`h-12 w-12 bg-${stat.color === "green" ? "green-500" : stat.color}/10 rounded-lg flex items-center justify-center`}
-                      >
-                        <stat.icon className={`h-6 w-6 text-${stat.color === "green" ? "green-500" : stat.color}`} />
-                      </motion.div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">{stat.change}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="flex items-center gap-2.5">
+            <Button asChild variant="ghost" size="sm" className="text-xs font-semibold gap-1.5 h-9">
+              <Link href="/">
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Home</span>
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchData}
+              disabled={isLoading}
+              className="text-xs font-semibold gap-1.5 h-9"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </Button>
+            <Button asChild size="sm" className="text-xs font-semibold gap-1.5 h-9">
+              <Link href="/detect">
+                <Brain className="h-3.5 w-3.5" />
+                <span>Launch Detector</span>
+              </Link>
+            </Button>
+          </div>
+        </div>
 
-          {/* Real-Time Analytics Section Divider */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <div className="border-t border-border pt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Real-Time Analytics</h2>
-              <p className="text-muted-foreground">Live performance metrics and content analysis trends</p>
-            </div>
-          </motion.div>
+        {/* 4 Key Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <Card className="border-border/70 shadow-xs">
+            <CardHeader className="pb-2 space-y-1">
+              <CardDescription className="text-xs uppercase font-medium tracking-wider">
+                Total Evaluated
+              </CardDescription>
+              <CardTitle className="text-3xl font-extrabold text-foreground">
+                {analytics.total_messages.toLocaleString()}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5 text-primary" />
+                <span>Messages processed by pipeline</span>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Charts Row */}
-          <motion.div variants={containerVariants} className="grid lg:grid-cols-2 gap-6">
-            {/* Content Distribution Pie Chart */}
-            <motion.div variants={cardVariants} whileHover="hover">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    Content Distribution
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="h-80"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => [`${value}%`, "Percentage"]}
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "6px",
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <Card className="border-border/70 shadow-xs">
+            <CardHeader className="pb-2 space-y-1">
+              <CardDescription className="text-xs uppercase font-medium tracking-wider text-destructive">
+                Cyberbullying Flagged
+              </CardDescription>
+              <CardTitle className="text-3xl font-extrabold text-destructive">
+                {analytics.cyberbullying_count.toLocaleString()}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground flex items-center justify-between">
+                <span>Threat Ratio:</span>
+                <span className="font-semibold text-destructive">{analytics.cyberbullying_ratio}%</span>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Model Benchmark Bar Chart */}
-            <motion.div variants={cardVariants} whileHover="hover">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-primary" />
-                    Model Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className="h-80"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={modelBenchmarkData} layout="horizontal">
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 12 }} />
-                        <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={100} />
-                        <Tooltip
-                          formatter={(value) => [`${value}%`, "Accuracy"]}
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "6px",
-                          }}
-                        />
-                        <Bar dataKey="accuracy" radius={[0, 4, 4, 0]}>
-                          {modelBenchmarkData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.highlight ? "hsl(var(--primary))" : entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                    className="mt-4 text-sm text-muted-foreground"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <div className="w-3 h-3 bg-primary rounded-sm"></div>
-                      RoBERTa achieves 94% accuracy with the highest precision and recall
-                    </span>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
+          <Card className="border-border/70 shadow-xs">
+            <CardHeader className="pb-2 space-y-1">
+              <CardDescription className="text-xs uppercase font-medium tracking-wider text-emerald-600">
+                Safe Messages
+              </CardDescription>
+              <CardTitle className="text-3xl font-extrabold text-emerald-600">
+                {analytics.safe_count.toLocaleString()}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground flex items-center justify-between">
+                <span>Safe Ratio:</span>
+                <span className="font-semibold text-emerald-600">{analytics.safe_ratio}%</span>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Timeline Chart */}
-          <motion.div variants={cardVariants} whileHover="hover">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  Analysis Trends Over Time
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="h-80"
-                >
+          <Card className="border-border/70 shadow-xs">
+            <CardHeader className="pb-2 space-y-1">
+              <CardDescription className="text-xs uppercase font-medium tracking-wider">
+                Active Architecture
+              </CardDescription>
+              <CardTitle className="text-xl font-bold text-primary pt-1">
+                RoBERTa + 7 Agents
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5 text-emerald-600" />
+                <span>PII Redacted & Vector RAG</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Risk Tier Distribution Bar Chart */}
+          <Card className="border-border/70">
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <span>Threat & Risk Tier Breakdown</span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Distribution across Low, Medium, High, and Critical risk tiers.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={riskChartData}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis allowDecimals={false} fontSize={12} />
+                    <Tooltip
+                      formatter={(val: any) => [`${val} messages`, "Count"]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {riskChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Content Ratio Pie Chart */}
+          <Card className="border-border/70">
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <PieChart className="h-4 w-4 text-primary" />
+                <span>Content Classification Ratio</span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Safe content vs cyberbullying classifications in database history.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {analytics.total_messages === 0 ? (
+                <div className="h-64 flex flex-col items-center justify-center text-center p-4">
+                  <Activity className="h-10 w-10 text-muted-foreground/50 mb-2" />
+                  <p className="text-sm font-medium text-muted-foreground">No evaluation records logged yet.</p>
+                  <p className="text-xs text-muted-foreground/80 mt-1">
+                    Run your first test on the Detect page to populate live statistics.
+                  </p>
+                </div>
+              ) : (
+                <div className="h-64 w-full flex items-center justify-center">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={timelineData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
+                    <PieChart>
+                      <Pie
+                        data={pieData.filter((d) => d.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`pie-cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
                       <Tooltip
+                        formatter={(val: any) => [`${val} messages`, "Total"]}
                         contentStyle={{
                           backgroundColor: "hsl(var(--card))",
                           border: "1px solid hsl(var(--border))",
-                          borderRadius: "6px",
+                          borderRadius: "8px",
                         }}
                       />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="safe"
-                        stroke="hsl(var(--chart-3))"
-                        strokeWidth={3}
-                        name="Safe Content"
-                        dot={{ fill: "hsl(var(--chart-3))", strokeWidth: 2, r: 4 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="bullying"
-                        stroke="hsl(var(--chart-4))"
-                        strokeWidth={3}
-                        name="Cyberbullying"
-                        dot={{ fill: "hsl(var(--chart-4))", strokeWidth: 2, r: 4 }}
-                      />
-                    </LineChart>
+                    </PieChart>
                   </ResponsiveContainer>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Training Dataset Information Section Divider */}
-          <motion.div variants={itemVariants} className="space-y-4">
-            <div className="border-t border-border pt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-2">Training Dataset Information</h2>
-              <p className="text-muted-foreground">Details about the machine learning model training data</p>
+        {/* Recent Analysis History Table with Real Deletion */}
+        <Card className="border-border/70 shadow-xs">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Lock className="h-4 w-4 text-emerald-600" />
+                <span>Recent Analysis Audit Log</span>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Persisted historical records with sanitized text (PII redacted) and deletion capabilities.
+              </CardDescription>
             </div>
-          </motion.div>
-
-          {/* Training Dataset Section */}
-          <motion.div variants={containerVariants} className="grid lg:grid-cols-2 gap-6">
-            {/* Training Dataset Distribution Bar Chart */}
-            <motion.div variants={cardVariants} whileHover="hover">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-primary" />
-                    Dataset Distribution by Category
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.5 }}
-                    className="h-80"
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={classDistributionData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-45} textAnchor="end" height={80} />
-                        <YAxis tick={{ fontSize: 12 }} />
-                        <Tooltip
-                          formatter={(value) => [`${value.toLocaleString()}`, "Samples"]}
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "6px",
-                          }}
-                        />
-                        <Bar dataKey="samples" radius={[4, 4, 0, 0]}>
-                          {classDistributionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Dataset Sample Counts */}
-            <motion.div variants={cardVariants} whileHover="hover">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5 text-primary" />
-                    Exact Sample Counts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {classDistributionData.map((item, index) => (
-                      <motion.div
-                        key={item.name}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: item.color }}></div>
-                          <span className="font-medium text-foreground">{item.name}</span>
-                        </div>
-                        <span className="text-lg font-bold text-primary">{item.samples.toLocaleString()}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.8 }}
-                    className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-lg"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold text-foreground">Total Training Samples:</span>
-                      <span className="text-2xl font-bold text-primary">47,692</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Balanced dataset across 6 cyberbullying categories for comprehensive model training
-                    </p>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-
-          {/* Recent Analyses */}
-          <motion.div variants={cardVariants} whileHover="hover">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Analyses</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <motion.div variants={containerVariants} className="space-y-4">
-                  {recentAnalyses.map((analysis, index) => (
+            <span className="text-xs font-mono text-muted-foreground">
+              Showing {analyses.length} recent records
+            </span>
+          </CardHeader>
+          <CardContent>
+            {analyses.length === 0 ? (
+              <div className="py-12 text-center space-y-3">
+                <CheckCircle className="h-10 w-10 text-muted-foreground/40 mx-auto" />
+                <h3 className="text-base font-semibold text-foreground">No Analysis Records Found</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Evaluate messages using the RoBERTa multi-agent pipeline to see persistent logs appear here.
+                </p>
+                <Button asChild size="sm" className="mt-2">
+                  <Link href="/detect">Go to Detect Page</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {analyses.map((item) => {
+                  const isBullying = item.label === "cyberbullying"
+                  const confPct = Math.round(item.confidence * 100)
+                  return (
                     <motion.div
-                      key={analysis.id}
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.01, x: 5 }}
-                      className="flex items-start gap-4 p-4 border border-border rounded-lg transition-all duration-200"
+                      key={item.id || item.request_id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 rounded-xl border border-border/70 hover:border-primary/40 bg-card/60 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                     >
-                      <div className="flex-shrink-0">
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                        >
-                          {analysis.prediction === "bullying" ? (
-                            <AlertTriangle className="h-5 w-5 text-destructive mt-1" />
-                          ) : (
-                            <CheckCircle className="h-5 w-5 text-green-500 mt-1" />
-                          )}
-                        </motion.div>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <p className="text-sm text-foreground line-clamp-2">{analysis.text}</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <Badge variant={analysis.prediction === "bullying" ? "destructive" : "secondary"}>
-                            {analysis.prediction === "bullying" ? "Cyberbullying" : "Safe"}
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={isBullying ? "destructive" : "secondary"} className="text-[11px] font-semibold">
+                            {isBullying ? "Cyberbullying" : "Safe Content"}
                           </Badge>
-                          <span>Confidence: {analysis.confidence}%</span>
-                          <span>Model: {analysis.model}</span>
-                          <span>{analysis.timestamp}</span>
+                          <Badge className={`text-[10px] uppercase font-bold ${getRiskBadgeColor(item.risk_level)}`}>
+                            {item.risk_level} RISK
+                          </Badge>
+                          <span className="text-xs font-mono text-muted-foreground">
+                            Conf: {confPct}%
+                          </span>
+                          {item.created_at && (
+                            <span className="text-[11px] text-muted-foreground font-mono">
+                              &bull; {new Date(item.created_at).toLocaleString()}
+                            </span>
+                          )}
                         </div>
+                        <p className="text-xs font-mono text-foreground bg-muted/40 p-2 rounded border border-border/40 truncate max-w-2xl">
+                          "{item.sanitized_text}"
+                        </p>
+                        {item.explanation && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">
+                            {item.explanation}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={deletingId === item.id}
+                          onClick={() => handleDelete(item.id)}
+                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Delete from database"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span className="ml-1 hidden sm:inline">Delete</span>
+                        </Button>
                       </div>
                     </motion.div>
-                  ))}
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

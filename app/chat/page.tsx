@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { ChatMessageContent } from "@/components/chat-message-content"
 
 interface SourceItem {
   chunk_id: string
@@ -42,11 +43,12 @@ interface ChatMessage {
 }
 
 const SAMPLE_PROMPTS = [
-  "Why was this classified as cyberbullying?",
-  "What should I do if someone is threatening me online?",
-  "How do I report harassment on Instagram and preserve evidence?",
-  "Explain the active bystander 4Ds framework.",
-  "What crisis hotlines and support resources are available?",
+  "How this content is safe?",
+  "Why is content marked not safe?",
+  "Take me to the Detection suite",
+  "Open the Analytics Dashboard",
+  "Tell me about the system architecture",
+  "How can I contact or collaborate?",
 ]
 
 function ChatComponent() {
@@ -174,12 +176,15 @@ function ChatComponent() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="text-xs">
+              <Link href="/">Home</Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={handleResetChat} className="text-xs gap-1.5">
               <RefreshCw className="h-3.5 w-3.5" />
               New Chat
             </Button>
             <Button variant="default" size="sm" asChild className="text-xs">
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/detect">Live Detector</Link>
             </Button>
           </div>
         </div>
@@ -227,7 +232,9 @@ function ChatComponent() {
                         : "bg-muted/70 text-foreground border border-border/60 rounded-tl-xs"
                     }`}
                   >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div>
+                      <ChatMessageContent content={msg.content} isAssistant={msg.role === "assistant"} />
+                    </div>
                   </div>
 
                   {/* Grounding Sources Cards */}

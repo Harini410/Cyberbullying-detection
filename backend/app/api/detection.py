@@ -26,7 +26,7 @@ def detect_cyberbullying(payload: DetectionRequest):
         label=result["label"],
         confidence=result["confidence"],
         probabilities=result["probabilities"],
-        model_name=result.get("model_name", "RoBERTa"),
+        model_name=result.get("model_name", "RoBERTa — Active Primary Model"),
         model_version=result.get("model_version", "1.0.0"),
         latency_ms=result.get("latency_ms", 0.0),
         pii_redacted=privacy_res.get("pii_detected", False),
